@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: catalogo-caballeros
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_USER
+        value: PATTYps
+      - key: ADMIN_PASS
+        value: PATTYpschincha452416
+      - key: JWT_SECRET
+        value: catalogo_caballeros_jwt_secure_key_452416_pattyps
+      - key: UPLOAD_DIR
+        value: uploads
+      - key: CLOUDINARY_CLOUD_NAME
+        value: hvoicb7h
+      - key: CLOUDINARY_API_KEY
+        value: 296764566543229
+      - key: CLOUDINARY_API_SECRET
+        value: PjrI6SwHn6CAb5Dmsfh26m5wzlg

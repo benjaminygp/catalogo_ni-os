@@ -1,0 +1,70 @@
+
+# ==========================================================================
+# CATALOGO CABALLEROS - .gitignore
+# ==========================================================================
+
+# 1. Dependencias de Node.js
+node_modules/
+*/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+
+# 2. Variables de entorno y credenciales sensibles
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+backend/.env.*
+!.env.example
+!backend/.env.example
+
+# 3. Base de datos SQLite y archivos temporales WAL
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+*.db
+backend/src/config/*.sqlite*
+
+# 4. Archivos de fotos subidas por usuarios (mantener SVGs de muestra de la semilla)
+backend/uploads/prod-*
+
+# 5. Logs y archivos de tiempo de ejecución
+logs/
+*.log
+
+# 6. Archivos de sistema operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# 7. Configuraciones de editores e IDEs
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+
+# 8. Archivos y carpetas temporales
+temp/
+tmp/
+.temp/
+.tmp/

@@ -1,0 +1,20 @@
+{
+  "name": "catalogo-caballeros",
+  "version": "1.0.0",
+  "description": "CATALOGO CABALLEROS - Fullstack Application",
+  "main": "backend/index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "cd backend && npm install && node seed.mjs",
+    "start": "node backend/index.js",
+    "seed": "node backend/seed.mjs"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "socket.io": "^4.7.5"
+  }
+}
