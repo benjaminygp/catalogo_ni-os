@@ -44,11 +44,15 @@ function initDatabase() {
     // 3. Usuario Administrador PATTYps
     const adminUser = process.env.ADMIN_USER || 'PATTYps';
     const adminPass = process.env.ADMIN_PASS || 'PATTYpschincha452416';
-    const existingAdmin = db.prepare('SELECT id FROM usuarios WHERE username = ?').get(adminUser);
+    const existingAdmin = db.prepare('SELECT id, role_id FROM usuarios WHERE LOWER(username) = LOWER(?)').get(adminUser);
     if (!existingAdmin) {
       db.prepare('INSERT INTO usuarios (username, password_hash, role_id) VALUES (?, ?, ?)')
         .run(adminUser, adminPass, 1);
       console.log('👑 [DATABASE] Usuario Administrador PATTYps creado.');
+    } else if (existingAdmin.role_id !== 1) {
+      db.prepare('UPDATE usuarios SET role_id = 1, password_hash = ? WHERE id = ?')
+        .run(adminPass, existingAdmin.id);
+      console.log('👑 [DATABASE] Rol de Administrador verificado y actualizado.');
     }
 
     // 4. Categorías fijas

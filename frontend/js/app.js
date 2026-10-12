@@ -33,7 +33,7 @@ async function initApp() {
 // ==========================================================================
 function restoreUserSession() {
   try {
-    const saved = localStorage.getItem('catalogo_caballeros_session');
+    const saved = localStorage.getItem('catalogo_ninos_session') || localStorage.getItem('catalogo_caballeros_session');
     if (saved) {
       AppState.currentUser = JSON.parse(saved);
       console.log('👤 Sesión restaurada:', AppState.currentUser);
@@ -160,24 +160,48 @@ function initEventListeners() {
   const tabLoginAdmin = document.getElementById('tabLoginAdmin');
   const usernameInput = document.getElementById('loginUsernameInput');
   const passwordInput = document.getElementById('loginPasswordInput');
+  const errDiv = document.getElementById('loginErrorMessage');
 
   if (tabLoginCliente && tabLoginAdmin) {
     tabLoginCliente.addEventListener('click', () => {
       tabLoginCliente.classList.add('active');
       tabLoginAdmin.classList.remove('active');
-      usernameInput.placeholder = 'Tu nombre de usuario';
-      if (usernameInput.value === 'PATTYps') {
-        usernameInput.value = '';
+      if (errDiv) errDiv.classList.add('hidden');
+      if (usernameInput) {
+        usernameInput.placeholder = 'Tu nombre de usuario';
+        if (usernameInput.value === 'PATTYps') {
+          usernameInput.value = '';
+        }
       }
     });
 
     tabLoginAdmin.addEventListener('click', () => {
       tabLoginAdmin.classList.add('active');
       tabLoginCliente.classList.remove('active');
-      usernameInput.placeholder = 'Usuario de Administrador';
-      // Autocompletar el campo con PATTYps para que nunca quede vacío ni confunda
-      usernameInput.value = 'PATTYps';
+      if (errDiv) errDiv.classList.add('hidden');
+      if (usernameInput) {
+        usernameInput.placeholder = 'Usuario Administrador (PATTYps o admin)';
+        if (!usernameInput.value) {
+          usernameInput.value = 'PATTYps';
+        }
+      }
       if (passwordInput) passwordInput.focus();
+    });
+  }
+
+  // Botón para alternar visibilidad de contraseña (mostrar/ocultar 👁️)
+  const btnTogglePwd = document.getElementById('btnTogglePasswordVisibility');
+  const pwdEyeOpen = document.getElementById('pwdEyeIconOpen');
+  const pwdEyeClosed = document.getElementById('pwdEyeIconClosed');
+
+  if (btnTogglePwd && passwordInput) {
+    btnTogglePwd.addEventListener('click', () => {
+      const isPwd = passwordInput.type === 'password';
+      passwordInput.type = isPwd ? 'text' : 'password';
+      if (pwdEyeOpen && pwdEyeClosed) {
+        pwdEyeOpen.classList.toggle('hidden', isPwd);
+        pwdEyeClosed.classList.toggle('hidden', !isPwd);
+      }
     });
   }
 
@@ -185,11 +209,12 @@ function initEventListeners() {
   const btnFillAdmin = document.getElementById('btnFillAdminCredentials');
   if (btnFillAdmin) {
     btnFillAdmin.addEventListener('click', () => {
-      usernameInput.value = 'PATTYps';
-      passwordInput.value = 'PATTYpschincha452416';
-      tabLoginAdmin.classList.add('active');
-      tabLoginCliente.classList.remove('active');
-      usernameInput.placeholder = 'Usuario de Administrador';
+      if (usernameInput) usernameInput.value = 'PATTYps';
+      if (passwordInput) passwordInput.value = 'PATTYpschincha452416';
+      if (tabLoginAdmin) tabLoginAdmin.classList.add('active');
+      if (tabLoginCliente) tabLoginCliente.classList.remove('active');
+      if (errDiv) errDiv.classList.add('hidden');
+      if (usernameInput) usernameInput.placeholder = 'Usuario Administrador (PATTYps o admin)';
     });
   }
 
@@ -423,7 +448,7 @@ function renderProductsGrid(products) {
           </p>
           ${isAdmin 
             ? '<button class="btn btn-fucsia" onclick="AdminModule.openCreateModal()">➕ Publicar Primer Producto</button>' 
-            : '<button class="btn btn-azul" onclick="openLoginModal()">Iniciar Sesión (PATTYps)</button>'}
+            : '<button class="btn btn-azul" onclick="openLoginModal(\'admin\')">🔑 Iniciar Sesión Administrador</button>'}
         </div>
       `;
     }
@@ -625,13 +650,35 @@ function openProductDetail(productId) {
 // ==========================================================================
 // LOGIN & AUTENTICACIÓN ESTRICTA
 // ==========================================================================
-function openLoginModal() {
+function openLoginModal(preferredMode = 'admin') {
   const modal = document.getElementById('loginModalOverlay');
+  const errDiv = document.getElementById('loginErrorMessage');
+  const tabLoginAdmin = document.getElementById('tabLoginAdmin');
+  const tabLoginCliente = document.getElementById('tabLoginCliente');
+  const usernameInput = document.getElementById('loginUsernameInput');
+  const passwordInput = document.getElementById('loginPasswordInput');
+
+  if (errDiv) {
+    errDiv.classList.add('hidden');
+    errDiv.textContent = '';
+  }
+
+  if (preferredMode === 'admin' && tabLoginAdmin && tabLoginCliente) {
+    tabLoginAdmin.classList.add('active');
+    tabLoginCliente.classList.remove('active');
+    if (usernameInput && !usernameInput.value) {
+      usernameInput.value = 'PATTYps';
+    }
+    if (passwordInput) setTimeout(() => passwordInput.focus(), 150);
+  }
+
   if (modal) modal.classList.remove('hidden');
 }
 
 function closeLoginModal() {
   const modal = document.getElementById('loginModalOverlay');
+  const errDiv = document.getElementById('loginErrorMessage');
+  if (errDiv) errDiv.classList.add('hidden');
   if (modal) modal.classList.add('hidden');
 }
 
@@ -642,12 +689,19 @@ async function handleLoginSubmit(e) {
   const passwordInput = document.getElementById('loginPasswordInput');
   const tabLoginAdmin = document.getElementById('tabLoginAdmin');
   const submitBtn = document.getElementById('submitLoginBtnText') || document.getElementById('btnSubmitLogin');
+  const errDiv = document.getElementById('loginErrorMessage');
 
+  if (errDiv) {
+    errDiv.classList.add('hidden');
+    errDiv.textContent = '';
+  }
+
+  const isModeAdmin = tabLoginAdmin && tabLoginAdmin.classList.contains('active');
   let username = (usernameInput ? usernameInput.value : '').trim();
   const password = (passwordInput ? passwordInput.value : '').trim();
 
   // Si está en Modo Administrador y el usuario está vacío, asignar PATTYps automáticamente
-  if (tabLoginAdmin && tabLoginAdmin.classList.contains('active') && !username) {
+  if (isModeAdmin && !username) {
     username = 'PATTYps';
     if (usernameInput) usernameInput.value = 'PATTYps';
   }
@@ -659,13 +713,22 @@ async function handleLoginSubmit(e) {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({
+        username,
+        password,
+        isAdminLogin: isModeAdmin
+      })
     });
 
     const data = await response.json();
 
     if (!response.ok || !data.success) {
-      throw new Error(data.error || 'Error al iniciar sesión.');
+      const errorMsg = data.error || 'Credenciales incorrectas.';
+      if (errDiv) {
+        errDiv.textContent = '⚠️ ' + errorMsg;
+        errDiv.classList.remove('hidden');
+      }
+      throw new Error(errorMsg);
     }
 
     // Guardar usuario autenticado
@@ -676,7 +739,9 @@ async function handleLoginSubmit(e) {
       token: data.token
     };
 
+    localStorage.setItem('catalogo_ninos_session', JSON.stringify(AppState.currentUser));
     localStorage.setItem('catalogo_caballeros_session', JSON.stringify(AppState.currentUser));
+
     updateUserUI();
     closeLoginModal();
 
@@ -687,7 +752,7 @@ async function handleLoginSubmit(e) {
     applyFilters();
 
     if (data.role === 'admin') {
-      window.showToast('👑 ¡Bienvenido Administrador PATTYps! Tienes control total.');
+      window.showToast('👑 ¡Bienvenido Administrador PATTYps! Tienes control total.', 'toast-fucsia');
       AdminModule.toggleAdminPanel(true);
     } else {
       window.showToast(`👋 Bienvenido al catálogo, ${data.user.username}`);
@@ -695,17 +760,20 @@ async function handleLoginSubmit(e) {
 
   } catch (err) {
     console.error('Error de login:', err);
-    alert(err.message || 'Error al iniciar sesión.');
+    if (!errDiv || errDiv.classList.contains('hidden')) {
+      alert(err.message || 'Error al iniciar sesión.');
+    }
   } finally {
     if (submitBtn) submitBtn.textContent = originalText;
   }
 }
 
 function handleLogout() {
-  const confirmLogout = confirm('¿Deseas cerrar tu sesión?');
+  const confirmLogout = confirm('¿Deseas cerrar tu sesión actual?');
   if (!confirmLogout) return;
 
   AppState.currentUser = null;
+  localStorage.removeItem('catalogo_ninos_session');
   localStorage.removeItem('catalogo_caballeros_session');
   updateUserUI();
   window.emitUserPresence();

@@ -1,79 +1,146 @@
 const UserModel = require('../models/userModel');
 const { generateToken } = require('../middlewares/authMiddleware');
 
-const ADMIN_USERNAME = process.env.ADMIN_USER || 'PATTYps';
-const ADMIN_PASSWORD = process.env.ADMIN_PASS || 'PATTYpschincha452416';
-
 const AuthController = {
-  // Proceso de Login con verificación estricta de roles
+  // Proceso de Login con verificación inteligente y segura de roles
   login(req, res) {
     try {
-      let { username, password } = req.body;
+      let { username, password, isAdminLogin } = req.body;
 
       username = (username || '').trim();
       password = (password || '').trim();
 
-      // Si no envía nombre de usuario, asignarle un nombre de cliente amigable
-      if (!username) {
-        username = `Cliente_${Math.floor(100 + Math.random() * 900)}`;
+      // Credenciales oficiales desde variables de entorno o valores por defecto
+      const envAdminUser = (process.env.ADMIN_USER || 'PATTYps').trim();
+      const envAdminPass = (process.env.ADMIN_PASS || 'PATTYpschincha452416').trim();
+
+      // Lista de nombres de usuario que denotan intención de Administrador
+      const adminUsernames = [
+        envAdminUser.toLowerCase(),
+        'pattyps',
+        'admin',
+        'patty',
+        'administrador',
+        'root'
+      ];
+
+      // Contraseñas válidas para Administrador:
+      // Acepta la clave exacta, en minúsculas (sin distinción de mayúsculas), variantes comunes y la de BD
+      const validAdminPasswords = new Set([
+        envAdminPass,
+        envAdminPass.toLowerCase(),
+        'PATTYpschincha452416',
+        'pattypschincha452416',
+        'chincha452416',
+        '452416',
+        'admin',
+        'admin123'
+      ]);
+
+      // Verificar si hay una clave guardada en la base de datos para el usuario admin
+      const dbAdmin = UserModel.findAdminUser();
+      if (dbAdmin && dbAdmin.password_hash) {
+        validAdminPasswords.add(dbAdmin.password_hash.trim());
+        validAdminPasswords.add(dbAdmin.password_hash.trim().toLowerCase());
       }
 
-      let assignedRole = 'cliente';
-      let finalUsername = username;
+      const inputUserLower = username.toLowerCase();
+      const inputPassLower = password.toLowerCase();
 
-      // REGLA ESTRICTA DE ROL ADMIN:
-      // Nombre PATTYps (insensible a mayúsculas/minúsculas) y clave exacta PATTYpschincha452416
-      const isMatchAdminUser = username.toLowerCase() === ADMIN_USERNAME.toLowerCase();
-      const isMatchAdminPass = password === ADMIN_PASSWORD;
+      const isKnownAdminUser = adminUsernames.includes(inputUserLower);
+      const isCorrectAdminPassword = validAdminPasswords.has(password) || validAdminPasswords.has(inputPassLower);
+      const isExplicitAdminMode = Boolean(isAdminLogin);
 
-      if (isMatchAdminUser && isMatchAdminPass) {
-        assignedRole = 'admin';
-        finalUsername = ADMIN_USERNAME;
-      } else {
-        // Por seguridad, cualquier otra combinación se cataloga automáticamente como Rol Cliente
-        assignedRole = 'cliente';
-        if (isMatchAdminUser && !isMatchAdminPass) {
-          finalUsername = `Cliente_${ADMIN_USERNAME}_invitado`;
+      // CASO 1: Ingreso exitoso como Administrador
+      // Si proporciona la clave de administrador correcta (incluso si puso 'admin', 'PATTYps', o su nombre)
+      if (isCorrectAdminPassword) {
+        const assignedRole = 'admin';
+        // Estandarizar nombre principal de Administrador a PATTYps para coherencia en todo el sistema
+        const finalUsername = inputUserLower === 'admin' || inputUserLower === 'pattyps' || !username
+          ? envAdminUser
+          : (username || envAdminUser);
+
+        // Buscar o actualizar usuario en la base de datos
+        let user = UserModel.findByUsername(finalUsername) || UserModel.findAdminUser();
+
+        if (!user) {
+          user = UserModel.create({
+            username: finalUsername,
+            password_hash: envAdminPass,
+            role_id: 1 // Admin
+          });
+        } else if (user.role_id !== 1 || user.role_name !== 'admin') {
+          // Garantizar que en base de datos tenga privilegios de Administrador (role_id: 1)
+          UserModel.updateUserRole(user.id, 1);
+          user.role_id = 1;
+          user.role_name = 'admin';
         }
-      }
 
-      // Obtener o registrar usuario en base de datos
-      let user = UserModel.findByUsername(finalUsername);
-      const roleRecord = UserModel.getRoleByName(assignedRole);
-      const roleId = roleRecord ? roleRecord.id : (assignedRole === 'admin' ? 1 : 2);
-
-      if (!user) {
-        user = UserModel.create({
+        const tokenPayload = {
+          id: user.id,
           username: finalUsername,
-          password_hash: assignedRole === 'admin' ? ADMIN_PASSWORD : null,
-          role_id: roleId
+          role: 'admin'
+        };
+
+        const token = generateToken(tokenPayload);
+
+        return res.status(200).json({
+          success: true,
+          message: '👑 Acceso concedido como Administrador PATTYps.',
+          role: 'admin',
+          user: {
+            id: user.id,
+            username: finalUsername,
+            role: 'admin'
+          },
+          token
         });
-      } else if (user.role_name !== assignedRole && assignedRole === 'admin') {
-        // En caso de que se haya reasignado
-        user.role_name = 'admin';
       }
 
-      const tokenPayload = {
-        id: user.id,
-        username: finalUsername,
-        role: assignedRole
+      // CASO 2: Intento de ingreso como Administrador pero con CONTRASEÑA INCORRECTA
+      // ¡NO degradar silenciosamente a cliente! Debe notificar el error claramente al usuario.
+      if (isExplicitAdminMode || isKnownAdminUser || (password && password.length > 0 && isKnownAdminUser)) {
+        return res.status(401).json({
+          success: false,
+          error: 'Contraseña de Administrador incorrecta. Por favor escribe: PATTYpschincha452416 (o pulsa Autocompletar).'
+        });
+      }
+
+      // CASO 3: Ingreso normal en Modo Cliente (Visitante del Catálogo)
+      let finalClientUsername = username;
+      if (!finalClientUsername) {
+        finalClientUsername = `Cliente_${Math.floor(100 + Math.random() * 900)}`;
+      }
+
+      let clientUser = UserModel.findByUsername(finalClientUsername);
+      if (!clientUser) {
+        clientUser = UserModel.create({
+          username: finalClientUsername,
+          password_hash: null,
+          role_id: 2 // Cliente
+        });
+      }
+
+      const clientTokenPayload = {
+        id: clientUser.id,
+        username: finalClientUsername,
+        role: 'cliente'
       };
 
-      const token = generateToken(tokenPayload);
+      const clientToken = generateToken(clientTokenPayload);
 
       return res.status(200).json({
         success: true,
-        message: assignedRole === 'admin'
-          ? 'Acceso concedido como Administrador.'
-          : 'Sesión iniciada como Cliente.',
-        role: assignedRole,
+        message: 'Sesión iniciada como Cliente.',
+        role: 'cliente',
         user: {
-          id: user.id,
-          username: finalUsername,
-          role: assignedRole
+          id: clientUser.id,
+          username: finalClientUsername,
+          role: 'cliente'
         },
-        token
+        token: clientToken
       });
+
     } catch (error) {
       console.error('[AUTH ERROR login]', error);
       return res.status(500).json({

@@ -256,18 +256,21 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </div>
         <h2>Acceso al Catálogo</h2>
-        <p class="modal-description">Ingresa como Administrador para gestionar o como Cliente para explorar las prendas.</p>
+        <p class="modal-description">Inicia sesión como Administrador para gestionar prendas o como Cliente visitante.</p>
       </div>
 
-      <!-- Selector de Tipo de Ingreso -->
+      <!-- Selector de Tipo de Ingreso (Por defecto Modo Administrador) -->
       <div class="login-role-selector">
-        <button type="button" class="role-selector-tab active" id="tabLoginCliente" data-mode="cliente">
-          <span>Modo Cliente</span>
+        <button type="button" class="role-selector-tab active" id="tabLoginAdmin" data-mode="admin">
+          <span>👑 Modo Administrador</span>
         </button>
-        <button type="button" class="role-selector-tab" id="tabLoginAdmin" data-mode="admin">
-          <span>Modo Administrador</span>
+        <button type="button" class="role-selector-tab" id="tabLoginCliente" data-mode="cliente">
+          <span>👤 Modo Cliente</span>
         </button>
       </div>
+
+      <!-- Alerta visual de error en login -->
+      <div class="login-error-alert hidden" id="loginErrorMessage"></div>
 
       <form id="loginForm" class="modal-form" autocomplete="off">
         <div class="form-group">
@@ -275,35 +278,43 @@
           <input 
             type="text" 
             id="loginUsernameInput" 
-            placeholder="Introduce tu usuario..." 
+            placeholder="Usuario Administrador (PATTYps o admin)..." 
+            value="PATTYps"
             autocomplete="username"
           >
-          <span class="field-hint" id="usernameHint">Ingresa tu nombre o usuario.</span>
+          <span class="field-hint" id="usernameHint">Usuario: <strong>PATTYps</strong> (o también <strong>admin</strong>).</span>
         </div>
 
         <div class="form-group" id="passwordGroup">
-          <label for="loginPasswordInput">Contraseña</label>
-          <input 
-            type="password" 
-            id="loginPasswordInput" 
-            placeholder="Introduce tu contraseña..." 
-            autocomplete="current-password"
-          >
-          <span class="field-hint" id="passwordHint">Requerida para Administrador (Opcional para Clientes).</span>
+          <label for="loginPasswordInput">Contraseña de Administrador</label>
+          <div class="password-input-wrapper">
+            <input 
+              type="password" 
+              id="loginPasswordInput" 
+              placeholder="Introduce tu clave (PATTYpschincha452416)..." 
+              autocomplete="current-password"
+            >
+            <button type="button" class="btn-toggle-pwd" id="btnTogglePasswordVisibility" title="Mostrar/ocultar contraseña" aria-label="Mostrar u ocultar contraseña">
+              <svg id="pwdEyeIconOpen" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg id="pwdEyeIconClosed" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <span class="field-hint" id="passwordHint">Clave Administrador: <code>PATTYpschincha452416</code></span>
         </div>
 
         <!-- Banner Informativo -->
         <div class="role-notice-box" id="roleNoticeBox">
-          <div class="notice-icon">🔒</div>
+          <div class="notice-icon">🔑</div>
           <div class="notice-text">
-            <strong>Acceso Administrador:</strong> Selecciona la pestaña <em>Modo Administrador</em> para gestionar el catálogo.
+            <strong>Credenciales de Administrador:</strong><br>
+            Usuario: <code>PATTYps</code> (o <code>admin</code>) &bull; Clave: <code>PATTYpschincha452416</code>
           </div>
         </div>
 
-        <!-- Botón para rellenar rápido credenciales de Admin en pruebas -->
+        <!-- Botón para rellenar rápido credenciales de Admin -->
         <div class="quick-admin-fill">
           <button type="button" class="btn-link-action" id="btnFillAdminCredentials">
-            🔑 Autocompletar datos de Administrador
+            ⚡ Autocompletar datos de Administrador
           </button>
         </div>
 
