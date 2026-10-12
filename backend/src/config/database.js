@@ -58,23 +58,37 @@ function initDatabase() {
       (2, 'Calzado', 'calzado', 'footprints');
     `);
 
-    // 5. Subcategorías exactas
+    // 5. Subcategorías exactas para Catálogo Niños
+    db.exec('DELETE FROM subcategorias;');
+
     const subcats = [
-      { id: 1, categoria_id: 1, tipo_grupo: 'Marcas', name: 'camisas de marca', slug: 'camisas-de-marca' },
-      { id: 2, categoria_id: 1, tipo_grupo: 'Marcas', name: 'polos de marca', slug: 'polos-de-marca' },
-      { id: 3, categoria_id: 1, tipo_grupo: 'Marcas', name: 'pantalones y shorts de marca', slug: 'pantalones-y-shorts-de-marca' },
-      { id: 4, categoria_id: 1, tipo_grupo: 'Marcas', name: 'casacas y chompas de marca', slug: 'casacas-y-chompas-de-marca' },
-      { id: 5, categoria_id: 1, tipo_grupo: 'Marcas', name: 'conjuntos de marca', slug: 'conjuntos-de-marca' },
-      { id: 6, categoria_id: 1, tipo_grupo: 'Normal', name: 'polo y camisas', slug: 'polo-y-camisas' },
-      { id: 7, categoria_id: 1, tipo_grupo: 'Normal', name: 'pantalones y shorts', slug: 'pantalones-y-shorts' },
-      { id: 8, categoria_id: 1, tipo_grupo: 'Normal', name: 'conjuntos', slug: 'conjuntos' },
-      { id: 9, categoria_id: 2, tipo_grupo: 'Calzado', name: 'Zapatillas', slug: 'zapatillas' },
-      { id: 10, categoria_id: 2, tipo_grupo: 'Calzado', name: 'Zapatos', slug: 'zapatos' },
-      { id: 11, categoria_id: 2, tipo_grupo: 'Calzado', name: 'Sandalias', slug: 'sandalias' }
+      // ROPA - Niñas
+      { id: 1, categoria_id: 1, tipo_grupo: 'Niñas', name: 'vestidos', slug: 'vestidos-ninas' },
+      { id: 2, categoria_id: 1, tipo_grupo: 'Niñas', name: 'polos de marca', slug: 'polos-de-marca-ninas' },
+      { id: 3, categoria_id: 1, tipo_grupo: 'Niñas', name: 'conjuntos', slug: 'conjuntos-ninas' },
+      { id: 4, categoria_id: 1, tipo_grupo: 'Niñas', name: 'polos y blusas', slug: 'polos-y-blusas-ninas' },
+      { id: 5, categoria_id: 1, tipo_grupo: 'Niñas', name: 'pantalones shorts faldas', slug: 'pantalones-shorts-faldas-ninas' },
+      { id: 6, categoria_id: 1, tipo_grupo: 'Niñas', name: 'poleras chompas casacas', slug: 'poleras-chompas-casacas-ninas' },
+      { id: 7, categoria_id: 1, tipo_grupo: 'Niñas', name: 'ropa de baño', slug: 'ropa-de-bano-ninas' },
+
+      // ROPA - Niños
+      { id: 8, categoria_id: 1, tipo_grupo: 'Niños', name: 'polos de marca', slug: 'polos-de-marca-ninos' },
+      { id: 9, categoria_id: 1, tipo_grupo: 'Niños', name: 'pantalones y shorts', slug: 'pantalones-y-shorts-ninos' },
+      { id: 10, categoria_id: 1, tipo_grupo: 'Niños', name: 'polos y camisas', slug: 'polos-y-camisas-ninos' },
+      { id: 11, categoria_id: 1, tipo_grupo: 'Niños', name: 'conjuntos', slug: 'conjuntos-ninos' },
+      { id: 12, categoria_id: 1, tipo_grupo: 'Niños', name: 'poleras chompas casacas', slug: 'poleras-chompas-casacas-ninos' },
+      { id: 13, categoria_id: 1, tipo_grupo: 'Niños', name: 'ropa de baño', slug: 'ropa-de-bano-ninos' },
+
+      // CALZADO
+      { id: 14, categoria_id: 2, tipo_grupo: 'Calzado', name: 'zapatillas', slug: 'zapatillas' },
+      { id: 15, categoria_id: 2, tipo_grupo: 'Calzado', name: 'zapatos', slug: 'zapatos' },
+      { id: 16, categoria_id: 2, tipo_grupo: 'Calzado', name: 'sandalias', slug: 'sandalias' },
+      { id: 17, categoria_id: 2, tipo_grupo: 'Calzado', name: 'botines', slug: 'botines' },
+      { id: 18, categoria_id: 2, tipo_grupo: 'Calzado', name: 'balerinas', slug: 'balerinas' }
     ];
 
     const insertSubcat = db.prepare(`
-      INSERT OR REPLACE INTO subcategorias (id, categoria_id, tipo_grupo, name, slug)
+      INSERT INTO subcategorias (id, categoria_id, tipo_grupo, name, slug)
       VALUES (?, ?, ?, ?, ?)
     `);
     for (const sc of subcats) {

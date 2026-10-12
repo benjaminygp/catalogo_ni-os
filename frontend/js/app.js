@@ -372,7 +372,9 @@ function updateFilterBreadcrumbs() {
   else text += 'Todos los productos';
 
   if (AppState.activeSubcategorySlug) {
-    text += ` &bull; ${AppState.activeSubcategorySlug.replace(/-/g, ' ')}`;
+    const activePill = document.querySelector(`.subcat-pill[data-subcat-slug="${AppState.activeSubcategorySlug}"]`);
+    const subcatLabel = activePill ? activePill.textContent.trim() : AppState.activeSubcategorySlug.replace(/-/g, ' ');
+    text += ` &bull; ${subcatLabel}`;
   }
 
   if (AppState.searchQuery) {

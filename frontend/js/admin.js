@@ -95,11 +95,11 @@ const AdminModule = {
     const filtered = this.allSubcategories.filter(sc => sc.categoria_id === categoryId);
 
     if (categoryId === 1) {
-      // ROPA: Dividida en 'Marcas' y 'Normal'
-      const marcasGroup = document.createElement('optgroup');
-      marcasGroup.label = 'Marcas';
-      const normalGroup = document.createElement('optgroup');
-      normalGroup.label = 'Normal';
+      // ROPA: Dividida en 'Niñas' y 'Niños'
+      const ninasGroup = document.createElement('optgroup');
+      ninasGroup.label = 'Niñas';
+      const ninosGroup = document.createElement('optgroup');
+      ninosGroup.label = 'Niños';
 
       filtered.forEach(sc => {
         const opt = document.createElement('option');
@@ -109,17 +109,17 @@ const AdminModule = {
           opt.selected = true;
         }
 
-        if (sc.tipo_grupo === 'Marcas') {
-          marcasGroup.appendChild(opt);
+        if (sc.tipo_grupo === 'Niñas') {
+          ninasGroup.appendChild(opt);
         } else {
-          normalGroup.appendChild(opt);
+          ninosGroup.appendChild(opt);
         }
       });
 
-      select.appendChild(marcasGroup);
-      select.appendChild(normalGroup);
+      select.appendChild(ninasGroup);
+      select.appendChild(ninosGroup);
     } else {
-      // CALZADO: Zapatillas, Zapatos, Sandalias
+      // CALZADO: zapatillas, zapatos, sandalias, botines, balerinas
       const calzadoGroup = document.createElement('optgroup');
       calzadoGroup.label = 'Calzado';
 
