@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: catalogo-caballeros
+    name: catalogo-ninos
     runtime: node
     plan: free
     buildCommand: npm install && npm run build
@@ -13,7 +13,7 @@ services:
       - key: ADMIN_PASS
         value: PATTYpschincha452416
       - key: JWT_SECRET
-        value: catalogo_caballeros_jwt_secure_key_452416_pattyps
+        value: catalogo_ninos_jwt_secure_key_452416_pattyps
       - key: UPLOAD_DIR
         value: uploads
       - key: CLOUDINARY_CLOUD_NAME
