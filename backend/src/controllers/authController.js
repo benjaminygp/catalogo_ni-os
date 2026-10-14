@@ -102,7 +102,7 @@ const AuthController = {
       if (isExplicitAdminMode || isKnownAdminUser || (password && password.length > 0 && isKnownAdminUser)) {
         return res.status(401).json({
           success: false,
-          error: 'Contraseña de Administrador incorrecta. Por favor escribe: PATTYpschincha452416 (o pulsa Autocompletar).'
+          error: 'Contraseña de Administrador incorrecta. Por favor verifica tus credenciales.'
         });
       }
 

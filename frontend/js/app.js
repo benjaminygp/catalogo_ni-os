@@ -169,9 +169,10 @@ function initEventListeners() {
       if (errDiv) errDiv.classList.add('hidden');
       if (usernameInput) {
         usernameInput.placeholder = 'Tu nombre de usuario';
-        if (usernameInput.value === 'PATTYps') {
-          usernameInput.value = '';
-        }
+        usernameInput.value = '';
+      }
+      if (passwordInput) {
+        passwordInput.value = '';
       }
     });
 
@@ -180,12 +181,13 @@ function initEventListeners() {
       tabLoginCliente.classList.remove('active');
       if (errDiv) errDiv.classList.add('hidden');
       if (usernameInput) {
-        usernameInput.placeholder = 'Usuario Administrador (PATTYps o admin)';
-        if (!usernameInput.value) {
-          usernameInput.value = 'PATTYps';
-        }
+        usernameInput.placeholder = 'Usuario Administrador...';
+        usernameInput.value = '';
       }
-      if (passwordInput) passwordInput.focus();
+      if (passwordInput) {
+        passwordInput.value = '';
+      }
+      if (usernameInput) usernameInput.focus();
     });
   }
 
@@ -202,19 +204,6 @@ function initEventListeners() {
         pwdEyeOpen.classList.toggle('hidden', isPwd);
         pwdEyeClosed.classList.toggle('hidden', !isPwd);
       }
-    });
-  }
-
-  // Botón para autorrellenar credenciales del Admin
-  const btnFillAdmin = document.getElementById('btnFillAdminCredentials');
-  if (btnFillAdmin) {
-    btnFillAdmin.addEventListener('click', () => {
-      if (usernameInput) usernameInput.value = 'PATTYps';
-      if (passwordInput) passwordInput.value = 'PATTYpschincha452416';
-      if (tabLoginAdmin) tabLoginAdmin.classList.add('active');
-      if (tabLoginCliente) tabLoginCliente.classList.remove('active');
-      if (errDiv) errDiv.classList.add('hidden');
-      if (usernameInput) usernameInput.placeholder = 'Usuario Administrador (PATTYps o admin)';
     });
   }
 
@@ -663,13 +652,23 @@ function openLoginModal(preferredMode = 'admin') {
     errDiv.textContent = '';
   }
 
+  // Los campos siempre deben comenzar vacíos sin autorrelleno
+  if (usernameInput) {
+    usernameInput.value = '';
+    usernameInput.placeholder = preferredMode === 'admin' ? 'Usuario Administrador...' : 'Tu nombre de usuario';
+  }
+  if (passwordInput) {
+    passwordInput.value = '';
+  }
+
   if (preferredMode === 'admin' && tabLoginAdmin && tabLoginCliente) {
     tabLoginAdmin.classList.add('active');
     tabLoginCliente.classList.remove('active');
-    if (usernameInput && !usernameInput.value) {
-      usernameInput.value = 'PATTYps';
-    }
-    if (passwordInput) setTimeout(() => passwordInput.focus(), 150);
+    if (usernameInput) setTimeout(() => usernameInput.focus(), 150);
+  } else if (tabLoginAdmin && tabLoginCliente) {
+    tabLoginCliente.classList.add('active');
+    tabLoginAdmin.classList.remove('active');
+    if (usernameInput) setTimeout(() => usernameInput.focus(), 150);
   }
 
   if (modal) modal.classList.remove('hidden');
@@ -678,7 +677,17 @@ function openLoginModal(preferredMode = 'admin') {
 function closeLoginModal() {
   const modal = document.getElementById('loginModalOverlay');
   const errDiv = document.getElementById('loginErrorMessage');
-  if (errDiv) errDiv.classList.add('hidden');
+  const loginForm = document.getElementById('loginForm');
+  const usernameInput = document.getElementById('loginUsernameInput');
+  const passwordInput = document.getElementById('loginPasswordInput');
+
+  if (errDiv) {
+    errDiv.classList.add('hidden');
+    errDiv.textContent = '';
+  }
+  if (loginForm) loginForm.reset();
+  if (usernameInput) usernameInput.value = '';
+  if (passwordInput) passwordInput.value = '';
   if (modal) modal.classList.add('hidden');
 }
 
@@ -697,13 +706,16 @@ async function handleLoginSubmit(e) {
   }
 
   const isModeAdmin = tabLoginAdmin && tabLoginAdmin.classList.contains('active');
-  let username = (usernameInput ? usernameInput.value : '').trim();
+  const username = (usernameInput ? usernameInput.value : '').trim();
   const password = (passwordInput ? passwordInput.value : '').trim();
 
-  // Si está en Modo Administrador y el usuario está vacío, asignar PATTYps automáticamente
-  if (isModeAdmin && !username) {
-    username = 'PATTYps';
-    if (usernameInput) usernameInput.value = 'PATTYps';
+  // Si está en Modo Administrador, exigir que se ingresen las credenciales
+  if (isModeAdmin && (!username || !password)) {
+    if (errDiv) {
+      errDiv.textContent = '⚠️ Por favor ingresa el usuario y la contraseña de Administrador.';
+      errDiv.classList.remove('hidden');
+    }
+    return;
   }
 
   const originalText = submitBtn ? submitBtn.textContent : 'Ingresar al Catálogo';
